@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aetherium IDE Engine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/nord.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: #0a0e12; color: #d1e0ec; display: flex; flex-direction: column; overflow: hidden; }
+        .toolbar { background: linear-gradient(180deg, #3B5368 0%, #1F2D3A 100%); padding: 8px 12px; display: flex; gap: 8px; align-items: center; border-bottom: 2px solid #8B5A2B; }
+        button { background: linear-gradient(180deg, #C29B6E 0%, #8B5A2B 100%); color: #fff; border: 1px solid #4a3017; padding: 6px 12px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 12px; }
+        select { padding: 6px; background: #0a0e12; color: #F2CC8F; border: 1px solid #3B5368; border-radius: 4px; }
+        .CodeMirror { flex-grow: 1; font-size: 14px; height: auto; }
+        .console { height: 120px; background: #000; color: #A3C2D1; font-family: monospace; padding: 8px; overflow-y: auto; font-size: 12px; border-top: 2px solid #8B5A2B; }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <span style="font-weight: 900; color: #F2CC8F;">⚙️ AETHERIUM</span>
+        <select id="boardSelect">
+            <option value="esp32devkit">ESP32 DevKit V1</option>
+            <option value="uno">Arduino Uno</option>
+        </select>
+        <button id="compileBtn">⚙️ Compile Code</button>
+    </div>
+
+    <textarea id="codeEditor">
+/* Aetherium Studio - Demby Software Systems */
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("System Online.");
+}
+
+void loop() {
+  // Write your microcontroller logic here
+}
+    </textarea>
+
+    <div class="console" id="terminal">Aetherium Compiler Engine Ready.<br></div>
+
+    <script>
+        const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), { lineNumbers: true, mode: "text/x-c++src", theme: "nord" });
+        const terminal = document.getElementById('terminal');
+
+        function printLog(msg) {
+            terminal.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        document.getElementById('compileBtn').addEventListener('click', async () => {
+            const board = document.getElementById('boardSelect').value;
+            const code = editor.getValue();
+            printLog(`Compiling sketch for ${board}...`);
+
+            try {
+                const res = await fetch('/compile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, board })
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                const blob = await res.blob();
+                const a = document.createElement('a');
+                a.href = window.URL.createObjectURL(blob);
+                a.download = 'firmware.bin';
+                a.click();
+                printLog("✅ Build Successful! Firmware downloading.");
+            } catch (err) {
+                printLog(`❌ Error: ${err.message}`);
+            }
+        });
+    </script>
+</body>
+</html>
