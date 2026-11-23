@@ -8,26 +8,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/nord.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; background: #0a0e12; color: #d1e0ec; display: flex; flex-direction: column; overflow: hidden; }
-        .toolbar { background: linear-gradient(180deg, #3B5368 0%, #1F2D3A 100%); padding: 8px 12px; display: flex; gap: 8px; align-items: center; border-bottom: 2px solid #8B5A2B; }
+        .toolbar { background: linear-gradient(180deg, #3B5368 0%, #1F2D3A 100%); padding: 8px 12px; display: flex; gap: 8px; align-items: center; border-bottom: 2px solid #8B5A2B; flex-wrap: wrap; flex-shrink: 0; }
         button { background: linear-gradient(180deg, #C29B6E 0%, #8B5A2B 100%); color: #fff; border: 1px solid #4a3017; padding: 6px 12px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 12px; }
         select { padding: 6px; background: #0a0e12; color: #F2CC8F; border: 1px solid #3B5368; border-radius: 4px; }
-        .CodeMirror { flex-grow: 1; font-size: 14px; height: auto; }
-        .console { height: 120px; background: #000; color: #A3C2D1; font-family: monospace; padding: 8px; overflow-y: auto; font-size: 12px; border-top: 2px solid #8B5A2B; }
+        .work { flex-grow: 1; display: flex; min-height: 0; }
+        .work .CodeMirror { flex-grow: 1; font-size: 14px; height: auto; width: 100%; min-width: 0; }
+        body.mode-js .work .CodeMirror { width: 50%; flex: 1 1 50%; }
+        #previewPane { display: none; flex: 1 1 50%; min-width: 0; min-height: 0; border-left: 2px solid #8B5A2B; background: #07090e; }
+        body.mode-js #previewPane { display: block; }
+        #previewFrame { width: 100%; height: 100%; border: none; background: #07090e; }
+        .console { height: 120px; background: #000; color: #A3C2D1; font-family: monospace; padding: 8px; overflow-y: auto; font-size: 12px; border-top: 2px solid #8B5A2B; flex-shrink: 0; }
+        #downloadBtn { display: none; }
+        body.mode-js #downloadBtn { display: inline-block; }
+        body.mode-js #boardSelect { display: none; }
+        @media (max-width: 640px) {
+            .toolbar { padding: 8px; }
+            button, select { font-size: 12px; padding: 8px 10px; min-height: 36px; }
+            body.mode-js .work { flex-direction: column; }
+            body.mode-js .work .CodeMirror { width: 100%; height: 40%; flex: 1 1 42%; }
+            body.mode-js #previewPane { border-left: none; border-top: 2px solid #8B5A2B; flex: 1 1 46%; min-height: 180px; }
+            .console { height: 88px; font-size: 11px; }
+        }
     </style>
 </head>
-<body>
+<body data-mode="arduino">
 
     <div class="toolbar">
         <span style="font-weight: 900; color: #F2CC8F;">⚙️ AETHERIUM</span>
+        <select id="modeSelect" aria-label="Aetherium mode">
+            <option value="arduino">Arduino / ESP32</option>
+            <option value="js">Browser JS / DMB Tech 1</option>
+        </select>
         <select id="boardSelect">
             <option value="esp32devkit">ESP32 DevKit V1</option>
             <option value="uno">Arduino Uno</option>
         </select>
         <button id="compileBtn">⚙️ Compile Code</button>
+        <button id="downloadBtn" type="button">Download .html</button>
     </div>
 
+    <div class="work">
     <textarea id="codeEditor">
 /* Aetherium Studio - Demby Software Systems */
 #include <Arduino.h>
@@ -41,21 +64,193 @@ void loop() {
   // Write your microcontroller logic here
 }
     </textarea>
+    <div id="previewPane">
+        <iframe id="previewFrame" title="DMB Tech 1 preview" sandbox="allow-scripts allow-pointer-lock allow-downloads allow-modals allow-popups" allow="fullscreen; pointer-lock; gamepad; autoplay"></iframe>
+    </div>
+    </div>
 
     <div class="console" id="terminal">Aetherium Compiler Engine Ready.<br></div>
 
+    <script type="text/plain" id="dmbtech1Starter">// DMB Tech 1 starter — DembySoftwareSystems / Aetherium
+// Press Run Preview to play this tiny map in the pane on the right (or below, on a phone).
+
+// 1. Import the engine. "dmbtech1" is mapped to the official DMB Tech 1 file.
+import { createEngine } from 'dmbtech1';
+
+// 2. Create an engine bound to the #game box (Aetherium provides that box).
+//    assets: false uses built-in shapes and sounds, so no extra model files are needed.
+const engine = createEngine('#game', { assets: false });
+
+// 3. Listen for start before loadMap so this message is not missed.
+engine.on('start', () => console.log('DMB Tech 1: map running'));
+
+// 4. Load the official Tiny Arena map. A URL or a map object both work.
+await engine.loadMap('https://ddemby424.github.io/dystopia-project-moses/dmbtech1/maps/tiny-arena.retro');
+
+// 5. Start playing (this skips the title menu).
+engine.start();
+</script>
+
     <script>
+        const LS_ARDUINO = 'aetherium_arduino_sketch';
+        const LS_JS = 'aetherium_js_code';
+        const THREE_MOD = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js';
+        const THREE_ADDONS = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/';
+        const DMBTECH1_URL = 'https://ddemby424.github.io/dystopia-project-moses/dmbtech1/dmbtech1.js';
+
+        const starterEl = document.getElementById('dmbtech1Starter');
+        const DMBTECH1_STARTER = starterEl.textContent.replace(/^\n/, '');
+
         const editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), { lineNumbers: true, mode: "text/x-c++src", theme: "nord" });
         const terminal = document.getElementById('terminal');
+        const modeSelect = document.getElementById('modeSelect');
+        const compileBtn = document.getElementById('compileBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewFrame = document.getElementById('previewFrame');
+
+        let currentMode = 'arduino';
+        let saveTimer = null;
 
         function printLog(msg) {
             terminal.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
             terminal.scrollTop = terminal.scrollHeight;
         }
 
-        document.getElementById('compileBtn').addEventListener('click', async () => {
+        function defaultArduinoSketch() {
+            return document.getElementById('codeEditor').defaultValue || editor.getValue();
+        }
+
+        function escapeForScript(code) {
+            return String(code).replace(/<\/script/gi, '<\\/script');
+        }
+
+        function buildPreviewHtml(userCode) {
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DMB Tech 1 preview — DembySoftwareSystems</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "${THREE_MOD}",
+      "three/addons/": "${THREE_ADDONS}",
+      "dmbtech1": "${DMBTECH1_URL}"
+    }
+  }
+  <\/script>
+  <style>
+    html, body { margin: 0; height: 100%; background: #07090e; overflow: hidden; color: #e6ebf3;
+      font-family: 'Segoe UI', Tahoma, sans-serif; }
+    #game { position: fixed; inset: 0; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <script>
+    (function () {
+      try { void window.localStorage; return; } catch (e) {}
+      function memStore() {
+        var mem = {};
+        return {
+          getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+          setItem: function (k, v) { mem[k] = String(v); },
+          removeItem: function (k) { delete mem[k]; },
+          clear: function () { for (var k in mem) if (Object.prototype.hasOwnProperty.call(mem, k)) delete mem[k]; },
+          key: function (i) { return Object.keys(mem)[i] || null; },
+          get length() { return Object.keys(mem).length; }
+        };
+      }
+      var store = memStore();
+      try { Object.defineProperty(window, 'localStorage', { configurable: true, get: function () { return store; } }); } catch (e) {}
+      try { Object.defineProperty(window, 'sessionStorage', { configurable: true, get: function () { return store; } }); } catch (e) {}
+    })();
+    window.addEventListener('error', function (e) {
+      parent.postMessage({ type: 'aetherium-error', message: e.message || String(e) }, '*');
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      parent.postMessage({ type: 'aetherium-error', message: String(e.reason || e) }, '*');
+    });
+    var _err = console.error.bind(console);
+    console.error = function () {
+      parent.postMessage({ type: 'aetherium-error', message: Array.prototype.slice.call(arguments).join(' ') }, '*');
+      _err.apply(console, arguments);
+    };
+    var _log = console.log.bind(console);
+    console.log = function () {
+      parent.postMessage({ type: 'aetherium-log', message: Array.prototype.slice.call(arguments).join(' ') }, '*');
+      _log.apply(console, arguments);
+    };
+  <\/script>
+  <script type="module">
+${escapeForScript(userCode)}
+  <\/script>
+</body>
+</html>`;
+        }
+
+        function persistCurrent() {
+            const code = editor.getValue();
+            if (currentMode === 'js') localStorage.setItem(LS_JS, code);
+            else localStorage.setItem(LS_ARDUINO, code);
+        }
+
+        function scheduleSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(persistCurrent, 250);
+        }
+
+        function setMode(next, opts) {
+            opts = opts || {};
+            if (currentMode && currentMode !== next) persistCurrent();
+            currentMode = next;
+            modeSelect.value = next === 'js' ? 'js' : 'arduino';
+            document.body.dataset.mode = modeSelect.value;
+            document.body.classList.toggle('mode-js', next === 'js');
+
+            if (next === 'js') {
+                compileBtn.textContent = 'Run Preview';
+                editor.setOption('mode', 'javascript');
+                let code;
+                if (opts.template === 'dmbtech1') code = DMBTECH1_STARTER;
+                else code = localStorage.getItem(LS_JS) || DMBTECH1_STARTER;
+                editor.setValue(code);
+                printLog('Browser JS / DMB Tech 1 mode. Press Run Preview to play, or Download .html to save a page.');
+            } else {
+                compileBtn.textContent = '⚙️ Compile Code';
+                editor.setOption('mode', 'text/x-c++src');
+                const saved = localStorage.getItem(LS_ARDUINO);
+                editor.setValue(saved != null && saved !== '' ? saved : defaultArduinoSketch());
+                previewFrame.removeAttribute('srcdoc');
+                previewFrame.src = 'about:blank';
+            }
+            editor.refresh();
+        }
+
+        function runPreview() {
+            const code = editor.getValue();
+            persistCurrent();
+            printLog('Starting DMB Tech 1 preview...');
+            previewFrame.src = 'about:blank';
+            previewFrame.srcdoc = buildPreviewHtml(code);
+        }
+
+        function downloadHtml() {
+            const html = buildPreviewHtml(editor.getValue());
+            const blob = new Blob([html], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'dmbtech1-preview.html';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            printLog('Downloaded dmbtech1-preview.html');
+        }
+
+        async function compileArduino() {
             const board = document.getElementById('boardSelect').value;
             const code = editor.getValue();
+            persistCurrent();
             printLog(`Compiling sketch for ${board}...`);
 
             try {
@@ -76,7 +271,35 @@ void loop() {
             } catch (err) {
                 printLog(`❌ Error: ${err.message}`);
             }
+        }
+
+        compileBtn.addEventListener('click', async () => {
+            if (currentMode === 'js') runPreview();
+            else await compileArduino();
         });
+
+        downloadBtn.addEventListener('click', downloadHtml);
+        modeSelect.addEventListener('change', () => setMode(modeSelect.value));
+        editor.on('change', scheduleSave);
+        window.addEventListener('beforeunload', persistCurrent);
+
+        window.addEventListener('message', (ev) => {
+            const data = ev.data;
+            if (!data || typeof data !== 'object') return;
+            if (data.type === 'aetherium-error') printLog('❌ Preview: ' + data.message);
+            else if (data.type === 'aetherium-log') printLog(data.message);
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('mode') === 'js') {
+            setMode('js', { template: params.get('template') });
+            if (params.get('autostart') === '1' || params.get('autostart') === 'true') {
+                runPreview();
+            }
+        } else {
+            const savedArduino = localStorage.getItem(LS_ARDUINO);
+            if (savedArduino != null && savedArduino !== '') editor.setValue(savedArduino);
+        }
     </script>
 </body>
 </html>
