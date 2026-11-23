@@ -1,2 +1,5 @@
 # demby-software-systems
-Demby Software Systems
+
+Demby Software Systems — Central Engine, Aetherium IDE, and Games.
+
+Live site: https://dembysoftwaresystems.com/

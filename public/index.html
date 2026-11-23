@@ -6,20 +6,35 @@
     <title>Demby Software Systems | Central Engine</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0a0e12; color: #d1e0ec; display: flex; flex-direction: column; }
-        header { background: linear-gradient(180deg, #4A6984 0%, #1F2D3A 100%); border-bottom: 3px solid #8B5A2B; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header { background: linear-gradient(180deg, #4A6984 0%, #1F2D3A 100%); border-bottom: 3px solid #8B5A2B; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
         .logo-title { font-size: 1.4rem; font-weight: 900; color: #F2CC8F; letter-spacing: 2px; }
-        .nav-tabs { display: flex; background: #11181e; border-bottom: 2px solid #3B5368; padding: 0 10px; }
-        .tab-btn { background: linear-gradient(180deg, #3B5368 0%, #1F2D3A 100%); color: #8CA8BF; border: 1px solid #1a2630; border-bottom: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; margin-top: 5px; }
+        .nav-tabs { display: flex; background: #11181e; border-bottom: 2px solid #3B5368; padding: 0 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
+        .tab-btn { background: linear-gradient(180deg, #3B5368 0%, #1F2D3A 100%); color: #8CA8BF; border: 1px solid #1a2630; border-bottom: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px 5px 0 0; margin-right: 5px; margin-top: 5px; white-space: nowrap; }
         .tab-btn.active { background: linear-gradient(180deg, #C29B6E 0%, #8B5A2B 100%); color: #fff; border-color: #A67C52; }
         .view-content { flex-grow: 1; display: none; padding: 20px; background: #151e27; overflow-y: auto; }
         .view-content.active { display: flex; flex-direction: column; }
         .action-btn { background: linear-gradient(180deg, #C29B6E 0%, #8B5A2B 100%); color: #fff; border: 1px solid #4a3017; padding: 8px 16px; font-weight: bold; cursor: pointer; border-radius: 4px; text-decoration: none; display: inline-block; }
+        .action-btn.secondary { background: linear-gradient(180deg, #3B5368 0%, #1F2D3A 100%); border-color: #1a2630; }
         .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px; }
         .card { background: #11181e; border: 2px solid #3B5368; border-radius: 5px; padding: 15px; }
         .card h3 { margin-top: 0; color: #F2CC8F; border-bottom: 1px solid #2A3C4D; padding-bottom: 8px; }
+        .card p { color: #8CA8BF; }
+        .card .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 999; }
         .modal-content { background: #151e27; border: 2px solid #8B5A2B; border-radius: 5px; padding: 20px; width: 300px; text-align: center; }
         input[type="text"], input[type="password"] { width: 90%; padding: 8px; margin: 8px 0; background: #0a0e12; border: 1px solid #3B5368; color: #fff; }
+        .site-credit { margin-top: auto; padding-top: 18px; font-size: 0.75rem; color: #8CA8BF; }
+        .play-wrap { margin-top: 12px; border: 2px solid #8B5A2B; border-radius: 5px; overflow: hidden; background: #0a0e12; }
+        .play-frame { width: 100%; height: 62vh; min-height: 360px; border: none; display: block; background: #000; }
+        .play-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 10px; background: #11181e; border-bottom: 1px solid #2A3C4D; }
+        .play-bar span { color: #8CA8BF; font-size: 0.85rem; }
+        @media (max-width: 640px) {
+            header { flex-wrap: wrap; padding: 10px 12px; }
+            .logo-title { font-size: 1.05rem; letter-spacing: 1px; }
+            .tab-btn { padding: 8px 12px; font-size: 13px; }
+            .view-content { padding: 14px; }
+            .play-frame { height: 52vh; min-height: 280px; }
+        }
     </style>
 </head>
 <body>
@@ -27,7 +42,8 @@
     <header>
         <div>
             <div class="logo-title">⚙️ DEMBY SOFTWARE SYSTEMS</div>
-            <div style="font-size: 0.75rem; color: #8CA8BF;">Founder & Chief Architect: Darcy Demby</div>
+            <div style="font-size: 0.75rem; color: #8CA8BF;">Founder &amp; Chief Architect: Darcy Demby</div>
+            <div style="font-size: 0.7rem; color: #A67C52; font-style: italic;">Making cool tools with AI...</div>
         </div>
         <div>
             <span id="userStatus" style="color: #F2CC8F; font-weight: bold; font-size: 13px;">Guest Mode</span>
@@ -36,29 +52,102 @@
     </header>
 
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('hub-tab', this)">🏛️ Central Hub</button>
-        <button class="tab-btn" onclick="switchTab('ide-tab', this)">⚙️ Aetherium IDE</button>
-        <button class="tab-btn" onclick="switchTab('chat-tab', this)">💬 Global Comms</button>
-        <button class="tab-btn" onclick="switchTab('vault-tab', this)">📦 Software Vault</button>
+        <button class="tab-btn active" data-tab="hub-tab" onclick="switchTab('hub-tab', this)">🏛️ Central Hub</button>
+        <button class="tab-btn" data-tab="games-tab" onclick="switchTab('games-tab', this)">🎮 Games</button>
+        <button class="tab-btn" data-tab="ide-tab" onclick="switchTab('ide-tab', this)">⚙️ Aetherium IDE</button>
+        <button class="tab-btn" data-tab="chat-tab" onclick="switchTab('chat-tab', this)">💬 Global Comms</button>
+        <button class="tab-btn" data-tab="vault-tab" onclick="switchTab('vault-tab', this)">📦 Software Vault</button>
     </div>
 
     <!-- TAB 1: HUB -->
     <div id="hub-tab" class="view-content active">
         <h2 style="color: #F2CC8F; margin-top: 0;">Welcome to Demby Software Systems</h2>
-        <p style="color: #8CA8BF;">Explore our software releases, chat in public comms, or launch the centerpiece Aetherium IDE.</p>
-        <div class="card" style="border-color: #A67C52;">
-            <h3>🚀 Centerpiece Engine: Aetherium Web IDE</h3>
-            <p>Compile C++ code for ESP32 & Arduino microcontrollers straight from your browser. Wireless mobile OTA flashing supported.</p>
-            <button class="action-btn" onclick="launchIde()">Launch IDE Studio</button>
+        <p style="color: #8CA8BF;">Explore our software releases, play the games, chat in public comms, or launch the centerpiece Aetherium IDE.</p>
+        <div class="card-grid">
+            <div class="card" style="border-color: #A67C52;">
+                <h3>🎮 Games: RetroEngine &amp; DMB Tech 1</h3>
+                <p>Browser FPS maker and engine from DembySoftwareSystems. Play Cellblock Yard now, or open the editor, maps, and tutorial.</p>
+                <button class="action-btn" onclick="switchTab('games-tab')">Open Games</button>
+            </div>
+            <div class="card" style="border-color: #A67C52;">
+                <h3>🚀 Centerpiece Engine: Aetherium Web IDE</h3>
+                <p>Compile C++ code for ESP32 &amp; Arduino microcontrollers straight from your browser. Wireless mobile OTA flashing supported.</p>
+                <button class="action-btn" onclick="launchIde()">Launch IDE Studio</button>
+            </div>
         </div>
+        <p class="site-credit">A DembySoftwareSystems site. Darcy Demby, Chief Software Architect.</p>
     </div>
 
-    <!-- TAB 2: IDE EMBED -->
+    <!-- TAB 2: GAMES -->
+    <div id="games-tab" class="view-content">
+        <h2 style="color: #F2CC8F; margin-top: 0;">🎮 Games</h2>
+        <p style="color: #8CA8BF;">Play in the browser, or build your own maps with RetroEngine, powered by the DMB Tech 1 engine. Credit: DembySoftwareSystems.</p>
+
+        <div class="card" style="border-color: #A67C52;">
+            <h3>Play now: Cellblock Yard</h3>
+            <p>A finished RetroEngine map you can play right here. On a phone, or if the mouse look does not lock, use Open full game — first-person shooting works best in its own tab.</p>
+            <div class="play-wrap">
+                <div class="play-bar">
+                    <span>Cellblock Yard — RetroEngine</span>
+                    <a class="action-btn" href="https://ddemby424.github.io/dystopia-project-moses/retroengine/index.html#pack=maps/cellblock-yard.retro" target="_blank" rel="noopener">Open full game</a>
+                </div>
+                <iframe class="play-frame" title="Play Cellblock Yard" src="https://ddemby424.github.io/dystopia-project-moses/retroengine/index.html#pack=maps/cellblock-yard.retro" allow="fullscreen; gamepad; autoplay; pointer-lock; clipboard-read; clipboard-write" allowfullscreen loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <h3>RetroEngine</h3>
+                <p>Browser FPS maker and editor. Build maps, place enemies, and play them on the web.</p>
+                <div class="btn-row">
+                    <a class="action-btn" href="https://ddemby424.github.io/dystopia-project-moses/retroengine/" target="_blank" rel="noopener">Open RetroEngine</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Cellblock Yard</h3>
+                <p>Ready-to-play yard map. Same game as the Play now window above, in its own tab.</p>
+                <div class="btn-row">
+                    <a class="action-btn" href="https://ddemby424.github.io/dystopia-project-moses/retroengine/index.html#pack=maps/cellblock-yard.retro" target="_blank" rel="noopener">Play Cellblock Yard</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Map pack</h3>
+                <p>Download or browse RetroEngine maps to load in the editor.</p>
+                <div class="btn-row">
+                    <a class="action-btn" href="https://ddemby424.github.io/dystopia-project-moses/retroengine/maps/" target="_blank" rel="noopener">Browse maps</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Tutorial</h3>
+                <p>Step-by-step guide to making a map and playing it in RetroEngine.</p>
+                <div class="btn-row">
+                    <a class="action-btn" href="https://ddemby424.github.io/dystopia-project-moses/retroengine/tutorial/tutorial.html" target="_blank" rel="noopener">Open tutorial</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>DMB Tech 1</h3>
+                <p>The engine behind RetroEngine. A standalone ES module you can drop into your own pages.</p>
+                <div class="btn-row">
+                    <a class="action-btn" href="https://ddemby424.github.io/dystopia-project-moses/dmbtech1/" target="_blank" rel="noopener">Open DMB Tech 1</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Releases</h3>
+                <p>Versioned RetroEngine and DMB Tech 1 downloads and notes on GitHub.</p>
+                <div class="btn-row">
+                    <a class="action-btn" href="https://github.com/ddemby424/dystopia-project-moses/releases" target="_blank" rel="noopener">View releases</a>
+                </div>
+            </div>
+        </div>
+        <p class="site-credit">Games hosted on GitHub Pages and linked from DembySoftwareSystems. Engine name: DMB Tech 1. Aetherium IDE on this site is the ESP32 / Arduino C++ compiler — it cannot open these JS games yet.</p>
+    </div>
+
+    <!-- TAB 3: IDE EMBED -->
     <div id="ide-tab" class="view-content" style="padding: 0;">
         <iframe id="ideFrame" src="about:blank" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
 
-    <!-- TAB 3: CHAT -->
+    <!-- TAB 4: CHAT -->
     <div id="chat-tab" class="view-content">
         <h2 style="color: #F2CC8F; margin-top: 0;">💬 Public Communications</h2>
         <div style="flex-grow: 1; border: 2px solid #8B5A2B; border-radius: 5px; overflow: hidden;">
@@ -66,13 +155,13 @@
         </div>
     </div>
 
-    <!-- TAB 4: VAULT -->
+    <!-- TAB 5: VAULT -->
     <div id="vault-tab" class="view-content">
         <h2 style="color: #F2CC8F; margin-top: 0;">📦 Software Downloads</h2>
         <div class="card-grid">
             <div class="card">
                 <h3>Aether-Wave Spectrometer</h3>
-                <p>Wi-Fi & Bluetooth radar scanner binary for ESP32.</p>
+                <p>Wi-Fi &amp; Bluetooth radar scanner binary for ESP32.</p>
                 <button class="action-btn">Download .BIN</button>
             </div>
         </div>
@@ -96,11 +185,38 @@
             document.getElementById('loginTriggerBtn').innerText = "Switch Profile";
         }
 
+        const TAB_HASH = {
+            'hub-tab': 'hub',
+            'games-tab': 'games',
+            'ide-tab': 'ide',
+            'chat-tab': 'chat',
+            'vault-tab': 'vault'
+        };
+        const HASH_TAB = {
+            hub: 'hub-tab',
+            games: 'games-tab',
+            ide: 'ide-tab',
+            chat: 'chat-tab',
+            comms: 'chat-tab',
+            vault: 'vault-tab'
+        };
+
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            btnElement.classList.add('active');
+            const btn = btnElement || document.querySelector('[data-tab="' + tabId + '"]');
+            if (btn) btn.classList.add('active');
+            const hash = TAB_HASH[tabId] || 'hub';
+            if (location.hash.replace('#', '') !== hash) {
+                history.replaceState(null, '', '#' + hash);
+            }
+        }
+
+        function openTabFromHash() {
+            const h = (location.hash || '').replace('#', '').toLowerCase();
+            const tabId = HASH_TAB[h];
+            if (tabId) switchTab(tabId);
         }
 
         function openLoginModal() {
@@ -125,9 +241,12 @@
                 openLoginModal();
             } else {
                 document.getElementById('ideFrame').src = "/ide.html";
-                switchTab('ide-tab', document.querySelectorAll('.tab-btn')[1]);
+                switchTab('ide-tab', document.querySelector('[data-tab="ide-tab"]'));
             }
         }
+
+        window.addEventListener('hashchange', openTabFromHash);
+        openTabFromHash();
     </script>
 </body>
 </html>
