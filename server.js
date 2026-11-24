@@ -3,6 +3,8 @@ const cors = require('cors');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+const { attach } = require('./lib/mp-server');
 
 const app = express();
 app.use(cors());
@@ -47,4 +49,24 @@ app.post('/compile', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Demby Software Systems running on port ${PORT}`));
+const server = http.createServer(app);
+const wss = attach(server, { path: '/ws' });
+
+server.listen(PORT, () => {
+    console.log(`Demby Software Systems running on port ${PORT}`);
+    console.log('Multiplayer WebSocket at /ws');
+});
+
+// Render sends SIGTERM before a deploy or shutdown. Close sockets so
+// clients auto-reconnect instead of hanging.
+function shutdown() {
+    wss.clients.forEach(function (ws) {
+        try { ws.close(1012, 'server restart'); } catch (e) { /* ignore */ }
+    });
+    if (typeof wss.flushClose === 'function') wss.flushClose();
+    else wss.close();
+    server.close(function () { process.exit(0); });
+    setTimeout(function () { process.exit(0); }, 4000);
+}
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
